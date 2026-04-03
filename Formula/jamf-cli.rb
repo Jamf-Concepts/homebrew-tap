@@ -6,6 +6,7 @@
 class JamfCli < Formula
   desc "CLI for the Jamf platform — automate across Jamf Pro"
   homepage "https://github.com/Jamf-Concepts/jamf-cli"
+  version "1.0.0"
   license "MIT"
 
   if OS.mac?
