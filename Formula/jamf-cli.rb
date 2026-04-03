@@ -7,9 +7,12 @@ class JamfCli < Formula
   desc "CLI for the Jamf platform — automate across Jamf Pro"
   homepage "https://github.com/Jamf-Concepts/jamf-cli"
   version "1.0.0"
-  url "https://github.com/Jamf-Concepts/jamf-cli/releases/download/v#{version}/jamf-cli-#{version}-darwin-universal.tar.gz"
-  sha256 "19a1bb27a5bef31d0e595ed433faa03eab18ad04393c179b20a5b0a67b25d288"
   license "MIT"
+
+  if OS.mac?
+    url "https://github.com/Jamf-Concepts/jamf-cli/releases/download/v#{version}/jamf-cli-#{version}-darwin-universal.tar.gz"
+    sha256 "19a1bb27a5bef31d0e595ed433faa03eab18ad04393c179b20a5b0a67b25d288"
+  end
 
   if OS.linux? && Hardware::CPU.intel?
     url "https://github.com/Jamf-Concepts/jamf-cli/releases/download/v#{version}/jamf-cli-#{version}-linux-amd64.tar.gz"
