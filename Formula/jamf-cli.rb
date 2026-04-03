@@ -4,7 +4,7 @@
 # Formula for jamf-cli — CLI for the Jamf platform.
 # Tap: Jamf-Concepts/homebrew-tap
 class JamfCli < Formula
-  desc "CLI for the Jamf platform — automate across Jamf Pro"
+  desc "CLI for the Jamf platform"
   homepage "https://github.com/Jamf-Concepts/jamf-cli"
   version "1.0.0"
   license "MIT"
