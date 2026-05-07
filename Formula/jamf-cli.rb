@@ -11,12 +11,12 @@ class JamfCli < Formula
 
   if OS.mac?
     url "https://github.com/Jamf-Concepts/jamf-cli/releases/download/v#{version}/jamf-cli-#{version}-darwin-universal.tar.gz"
-    sha256 "c8caec53a2f8ce800a08e8cf63c801ef66059d0e0c3c76335ed27b497996a5e6"
+    sha256 "892ebd0a83629a24033627e3072ba20e6fd8556f885d48a41bf37dabc0ab4af1"
   end
 
   if OS.linux? && Hardware::CPU.intel?
     url "https://github.com/Jamf-Concepts/jamf-cli/releases/download/v#{version}/jamf-cli-#{version}-linux-amd64.tar.gz"
-    sha256 "892ebd0a83629a24033627e3072ba20e6fd8556f885d48a41bf37dabc0ab4af1"
+    sha256 "c8caec53a2f8ce800a08e8cf63c801ef66059d0e0c3c76335ed27b497996a5e6"
   end
 
   if OS.linux? && Hardware::CPU.arm?
