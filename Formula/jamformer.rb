@@ -6,22 +6,22 @@
 class Jamformer < Formula
   desc "Export your Jamf configuration as Terraform HCL"
   homepage "https://github.com/Jamf-Concepts/jamformer"
-  version "0.2.0"
+  version "0.3.0"
   license "MIT"
 
   if OS.mac?
     url "https://github.com/Jamf-Concepts/jamformer/releases/download/v#{version}/jamformer-#{version}-darwin-universal.tar.gz"
-    sha256 "a98fcd31e646b0e4634d52f98826e08dcc42f84523b5e653fc476eda428d0d1b"
+    sha256 "a5fe89aceaa7358d9147565fce1fbed2cef8e9b5c8fa87d2d1459dacbb64f571"
   end
 
   if OS.linux? && Hardware::CPU.intel?
     url "https://github.com/Jamf-Concepts/jamformer/releases/download/v#{version}/jamformer-#{version}-linux-amd64.tar.gz"
-    sha256 "c4a01f83fc38f9e109ae9b4275ca72b9bbd0a8fe38164fcdc1d5eb9d2b64b0cb"
+    sha256 "997fbdcdc9eea8170dad23e6bd258a7d879b94b4b5c94467f0bc410e4b194ea1"
   end
 
   if OS.linux? && Hardware::CPU.arm?
     url "https://github.com/Jamf-Concepts/jamformer/releases/download/v#{version}/jamformer-#{version}-linux-arm64.tar.gz"
-    sha256 "b13e9a813299fa03c6a3f31555ee93dc53313db83051c082c7309f7759595e36"
+    sha256 "315ed9534420221f43728fd84026d3740fb1b1635313d7d66f977d72aa7b1755"
   end
 
   def install
