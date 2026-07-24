@@ -6,22 +6,22 @@
 class JamfCli < Formula
   desc "CLI for the Jamf platform"
   homepage "https://github.com/Jamf-Concepts/jamf-cli"
-  version "1.25.0"
+  version "1.25.1"
   license "MIT"
 
   if OS.mac?
     url "https://github.com/Jamf-Concepts/jamf-cli/releases/download/v#{version}/jamf-cli-#{version}-darwin-universal.tar.gz"
-    sha256 "d79900f49f3af399867ccfa4c297e56415f5fe22f6749c6f3c5ecf09d89c00e4"
+    sha256 "fa5547a0335585e42cd1a03860a432df7858d84d09c4a2285c4efbd227864f98"
   end
 
   if OS.linux? && Hardware::CPU.intel?
     url "https://github.com/Jamf-Concepts/jamf-cli/releases/download/v#{version}/jamf-cli-#{version}-linux-amd64.tar.gz"
-    sha256 "36d14a4e8b1ef1f6399e204cb353314b04c769b1d4661ca06731bd3c86f28299"
+    sha256 "7ba2d61ab1dc091ad6924c09365cde3da5ce33aa56225fd80cebb8e5825a3384"
   end
 
   if OS.linux? && Hardware::CPU.arm?
     url "https://github.com/Jamf-Concepts/jamf-cli/releases/download/v#{version}/jamf-cli-#{version}-linux-arm64.tar.gz"
-    sha256 "a653984bef735d1504deba67e41957be2a06b0ddeb3ad47415c119db8ff914b7"
+    sha256 "32fde37284c073f6d6e23c24182c996b667032ce83fc0c8be6b312bad77c2fab"
   end
 
   def install
