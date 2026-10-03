@@ -6,26 +6,92 @@ on:
       - main
   pull_request:
 
+permissions: {}
+
+defaults:
+  run:
+    shell: bash -xeuo pipefail {0}
+
 jobs:
   test-bot:
     strategy:
+      fail-fast: false
       matrix:
-        os: [ ubuntu-24.04, macos-15-intel, macos-26 ]
+        include:
+          - os: macos-26
+          - os: macos-15-intel
+          - os: ubuntu-24.04
+            container:
+              image: ghcr.io/homebrew/brew:main
+              options: --privileged
+          - os: ubuntu-24.04-arm
+            container:
+              image: ghcr.io/homebrew/brew:main
+              options: --privileged
     runs-on: ${{ matrix.os }}
+    container: ${{ fromJSON(toJSON(matrix.container)) }}
     permissions:
       actions: read
       checks: read
       contents: read
       pull-requests: read
     steps:
+      # The Jamf-Concepts Actions policy allows only GitHub-owned actions, so
+      # this step does what Homebrew/actions/setup-homebrew does for a tap.
       - name: Set up Homebrew
         id: set-up-homebrew
-        uses: Homebrew/actions/setup-homebrew@main
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          BREW_GH_API_TOKEN: ${{ github.token }}
+        run: |
+          if ! command -v brew >/dev/null; then
+            PATH="/home/linuxbrew/.linuxbrew/bin:/opt/homebrew/bin:/usr/local/bin:$PATH"
+          fi
+          HOMEBREW_PREFIX="$(brew --prefix)"
+          HOMEBREW_REPOSITORY="$(brew --repository)"
+          tap_name="$(tr '[:upper:]' '[:lower:]' <<<"${GITHUB_REPOSITORY/\/homebrew-//}")"
+          tap_repository="$HOMEBREW_REPOSITORY/Library/Taps/$(tr '[:upper:]' '[:lower:]' <<<"$GITHUB_REPOSITORY")"
+
+          if [[ -f /.dockerenv ]]; then
+            # The runner mounts these directories as its own user, so give the
+            # container user write access.
+            user="$(whoami)"
+            for dir in "$HOME" "$RUNNER_WORKSPACE" "$RUNNER_TEMP" /__w/_actions; do
+              if [[ -d "$dir" && ! -w "$dir" ]]; then
+                sudo setfacl -Rm "d:u:$user:rwX,u:$user:rwX" "$dir"
+              fi
+            done
+            for repo in "$HOMEBREW_REPOSITORY" "$tap_repository"; do
+              git config --global --add safe.directory "$repo"
+            done
+          else
+            echo "$HOMEBREW_PREFIX/sbin" >>"$GITHUB_PATH"
+            echo "$HOMEBREW_PREFIX/bin" >>"$GITHUB_PATH"
+          fi
+
+          # GitHub-hosted runners set this, and test-bot needs it unset.
+          echo "HOMEBREW_NO_INSTALL_FROM_API=" >>"$GITHUB_ENV"
+          unset HOMEBREW_NO_INSTALL_FROM_API
+          echo "HOMEBREW_GITHUB_API_TOKEN=$BREW_GH_API_TOKEN" >>"$GITHUB_ENV"
+
+          git -C "$HOMEBREW_REPOSITORY" fetch --force --tags origin
+          git -C "$HOMEBREW_REPOSITORY" remote set-head origin --auto
+          git -C "$HOMEBREW_REPOSITORY" checkout --force -B main origin/HEAD
+          HOMEBREW_UPDATE_SKIP_BREW=1 brew update --auto-update
+
+          mkdir -p "$tap_repository"
+          git -C "$tap_repository" init --quiet
+          git -C "$tap_repository" remote add origin "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
+          git -C "$tap_repository" fetch origin "$GITHUB_SHA" '+refs/heads/*:refs/remotes/origin/*'
+          git -C "$tap_repository" remote set-head origin --auto
+          head="$(git -C "$tap_repository" symbolic-ref --short refs/remotes/origin/HEAD)"
+          git -C "$tap_repository" checkout --force -B "${head#origin/}" FETCH_HEAD
+          brew trust "$tap_name"
+
+          echo "gems-path=$HOMEBREW_REPOSITORY/Library/Homebrew/vendor/bundle/ruby/" >>"$GITHUB_OUTPUT"
+          echo "gems-hash=$(shasum -a 256 "$HOMEBREW_REPOSITORY/Library/Homebrew/Gemfile.lock" | cut -d' ' -f1)" >>"$GITHUB_OUTPUT"
 
       - name: Cache Homebrew Bundler RubyGems
-        uses: actions/cache@v6
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ steps.set-up-homebrew.outputs.gems-path }}
           key: ${{ matrix.os }}-rubygems-${{ steps.set-up-homebrew.outputs.gems-hash }}
@@ -35,17 +101,22 @@ jobs:
 
       - run: brew test-bot --only-setup
 
-      - name: Tap syntax (allow version for multi-platform binary formula)
-        run: brew test-bot --only-tap-syntax
-        continue-on-error: true
-      - name: Test formulae (allow version audit for multi-platform binary)
-        run: brew test-bot --only-formulae
-        if: github.event_name == 'pull_request'
-        continue-on-error: true
+      - run: brew test-bot --only-tap-syntax
 
-      - name: Upload bottles as artifact
-        if: always() && github.event_name == 'pull_request'
-        uses: actions/upload-artifact@v7
-        with:
-          name: bottles_${{ matrix.os }}
-          path: '*.bottle.*'
+      - run: brew test-bot --only-formulae
+        if: github.event_name == 'pull_request'
+
+      # test-bot reports a failed install or test of a changed formula with no
+      # bottle as skipped, not failed, and these formulae never have bottles.
+      - name: Install and test formulae
+        if: github.event_name == 'pull_request'
+        run: |
+          tap="$(brew --repository)/Library/Taps/$(tr '[:upper:]' '[:lower:]' <<<"$GITHUB_REPOSITORY")"
+          tap_name="$(tr '[:upper:]' '[:lower:]' <<<"${GITHUB_REPOSITORY/\/homebrew-//}")"
+          # test-bot writes a bottle block for bottles that are never published.
+          git -C "$tap" checkout -- Formula
+          for file in "$tap"/Formula/*.rb; do
+            formula="$tap_name/$(basename "$file" .rb)"
+            brew reinstall --formula "$formula"
+            brew test "$formula"
+          done
