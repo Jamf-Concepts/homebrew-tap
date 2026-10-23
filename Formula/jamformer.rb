@@ -9,18 +9,18 @@ class Jamformer < Formula
   license "MIT"
 
   if OS.mac?
-    url "https://github.com/Jamf-Concepts/jamformer/releases/download/v0.6.0/jamformer-0.6.0-darwin-universal.tar.gz"
-    sha256 "c9722e405edc0b55c99ea78fa797626a841ef8cebed9ee4577762942da9c0c4e"
+    url "https://github.com/Jamf-Concepts/jamformer/releases/download/v0.6.1/jamformer-0.6.1-darwin-universal.tar.gz"
+    sha256 "00ec142f60bf630d628f9a07ead47ddd4b3aeb4f6219a2590fd64218c62a5356"
   end
 
   if OS.linux? && Hardware::CPU.intel?
-    url "https://github.com/Jamf-Concepts/jamformer/releases/download/v0.6.0/jamformer-0.6.0-linux-amd64.tar.gz"
-    sha256 "6a38665ecbf05760ba03d1790d39fb1bb4f0f5a2f25e0748dde2e105d5d427eb"
+    url "https://github.com/Jamf-Concepts/jamformer/releases/download/v0.6.1/jamformer-0.6.1-linux-amd64.tar.gz"
+    sha256 "24b911b3010e7284e57f655f4160f1eeed182954c0f7629c6870cb6c1d1eeca4"
   end
 
   if OS.linux? && Hardware::CPU.arm?
-    url "https://github.com/Jamf-Concepts/jamformer/releases/download/v0.6.0/jamformer-0.6.0-linux-arm64.tar.gz"
-    sha256 "e40fc95cf1afc84a346927f008a3905ff67ffd8dbb2f6a9a28197b1d528c907f"
+    url "https://github.com/Jamf-Concepts/jamformer/releases/download/v0.6.1/jamformer-0.6.1-linux-arm64.tar.gz"
+    sha256 "ec2f1c14514d20214761f34010bafe5cc3b0935d1a36dcfb9711af0c0270c9fa"
   end
 
   def install
